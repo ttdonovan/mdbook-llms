@@ -10,6 +10,7 @@ use std::path::{Component, Path, PathBuf};
 
 const HTML_OUTPUT: &str = "html";
 
+// ANCHOR: config
 #[derive(Debug, Deserialize)]
 #[serde(default, rename_all = "kebab-case")]
 pub struct Config {
@@ -36,6 +37,7 @@ impl Default for Config {
         }
     }
 }
+// ANCHOR_END: config
 
 /// A chapter that has a file behind it, cleaned up for plain-text readers.
 struct Page<'a> {
