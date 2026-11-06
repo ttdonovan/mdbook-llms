@@ -7,6 +7,24 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.2.0](https://github.com/ttdonovan/mdbook-llms/compare/v0.1.1...v0.2.0) - 2026-11-06
+
+### Added
+
+- warn about broken links in the llms output.
+- keep hidden code lines in llms output without their marker.
+- add llms.txt v2 discovery links to merged HTML pages.
+
+### Fixed
+
+- read folded, literal and quoted frontmatter descriptions.
+
+### Other
+
+- enforce strict clippy lints and drop process::exit.
+- split lib.rs into modules and parse chapters once.
+- add crates.io and docs.rs badges to the README.
+
 ## [0.1.1](https://github.com/ttdonovan/mdbook-llms/compare/v0.1.0...v0.1.1) - 2026-11-06
 
 ### Other
