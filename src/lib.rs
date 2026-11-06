@@ -20,6 +20,10 @@ use std::path::{Path, PathBuf};
 
 const HTML_OUTPUT: &str = "html";
 
+#[expect(
+    clippy::struct_excessive_bools,
+    reason = "each bool is a user-facing TOML option"
+)]
 // ANCHOR: config
 #[derive(Debug, Deserialize)]
 #[serde(default, rename_all = "kebab-case")]
@@ -73,6 +77,12 @@ impl<'a> Page<'a> {
     }
 }
 
+/// Renders the llms output for the book in `ctx`.
+///
+/// # Errors
+///
+/// Fails when the config can't be read, merged mode finds no HTML output, or
+/// a file can't be written.
 pub fn run(ctx: &RenderContext) -> Result<()> {
     let config: Config = ctx.config.get("output.llms")?.unwrap_or_default();
     let merged = ctx.config.contains_key("output.html") && config.merge_into_html;

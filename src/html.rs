@@ -2,12 +2,13 @@
 
 use crate::{Config, Page, web_path};
 use anyhow::Result;
+use std::fmt::Write as _;
 use std::fs;
 use std::path::{Path, PathBuf};
 
 /// Points each HTML page at its Markdown and at `llms.txt`, as llms.txt v2
 /// recommends. Runs after the HTML renderer, so it edits finished pages.
-pub(crate) fn add_discovery_links(
+pub fn add_discovery_links(
     html_dir: &Path,
     pages: &[Page],
     base: &str,
@@ -17,17 +18,19 @@ pub(crate) fn add_discovery_links(
         let mut tags = String::new();
         if let Some(markdown) = markdown.filter(|_| config.pages) {
             let href = href(base, html, &web_path(markdown));
-            tags.push_str(&format!(
-                "<link rel=\"alternate\" type=\"text/markdown\" href=\"{}\">\n",
+            let _ = writeln!(
+                tags,
+                "<link rel=\"alternate\" type=\"text/markdown\" href=\"{}\">",
                 escape_attr(&href)
-            ));
+            );
         }
         if config.index {
             let href = href(base, html, "llms.txt");
-            tags.push_str(&format!(
-                "<link rel=\"describedby\" href=\"{}\">\n",
+            let _ = writeln!(
+                tags,
+                "<link rel=\"describedby\" href=\"{}\">",
                 escape_attr(&href)
-            ));
+            );
         }
         tags
     };

@@ -6,11 +6,12 @@ use crate::{Page, page_url};
 use mdbook_renderer::RenderContext;
 use mdbook_renderer::book::{BookItem, Chapter};
 use std::collections::HashMap;
+use std::fmt::Write as _;
 use std::path::{Path, PathBuf};
 
 /// The index: one line per chapter, grouped by `SUMMARY.md` parts and nested
 /// as in the book.
-pub(crate) fn index(ctx: &RenderContext, pages: &[Page], base: &str, extension: &str) -> String {
+pub fn index(ctx: &RenderContext, pages: &[Page], base: &str, extension: &str) -> String {
     let index = Index {
         pages: pages.iter().map(|page| (page.path, page)).collect(),
         base,
@@ -24,11 +25,11 @@ pub(crate) fn index(ctx: &RenderContext, pages: &[Page], base: &str, extension: 
         match item {
             BookItem::PartTitle(title) => {
                 flush_section(&mut out, &mut items, &mut heading_open);
-                out.push_str(&format!("## {title}\n\n"));
+                let _ = write!(out, "## {title}\n\n");
                 heading_open = true;
             }
             BookItem::Chapter(chapter) => index.list(chapter, 0, &mut items),
-            _ => {}
+            BookItem::Separator => {}
         }
     }
     flush_section(&mut out, &mut items, &mut heading_open);
@@ -48,23 +49,17 @@ impl Index<'_> {
             .as_deref()
             .and_then(|path| self.pages.get(path));
         // A draft has no page, so its children move up a level rather than vanish.
-        let child_depth = match page {
-            Some(page) => {
-                let url = page_url(self.base, page.path, self.extension);
-                let description = page
-                    .description
-                    .as_ref()
-                    .map(|d| format!(": {d}"))
-                    .unwrap_or_default();
-                let indent = "  ".repeat(depth);
-                out.push_str(&format!(
-                    "{indent}- [{}]({url}){description}\n",
-                    chapter.name
-                ));
-                depth.saturating_add(1)
-            }
-            None => depth,
-        };
+        let child_depth = page.map_or(depth, |page| {
+            let url = page_url(self.base, page.path, self.extension);
+            let description = page
+                .description
+                .as_ref()
+                .map(|d| format!(": {d}"))
+                .unwrap_or_default();
+            let indent = "  ".repeat(depth);
+            let _ = writeln!(out, "{indent}- [{}]({url}){description}", chapter.name);
+            depth.saturating_add(1)
+        });
         for item in &chapter.sub_items {
             if let BookItem::Chapter(sub) = item {
                 self.list(sub, child_depth, out);
@@ -87,7 +82,7 @@ fn flush_section(out: &mut String, items: &mut String, heading_open: &mut bool) 
 }
 
 /// Every chapter in reading order, each with a `Source:` line.
-pub(crate) fn full(
+pub fn full(
     ctx: &RenderContext,
     pages: &[Page],
     base: &str,
@@ -117,7 +112,7 @@ fn header(ctx: &RenderContext) -> String {
     let title = ctx.config.book.title.as_deref().unwrap_or("Untitled");
     let mut out = format!("# {title}\n\n");
     if let Some(description) = &ctx.config.book.description {
-        out.push_str(&format!("> {description}\n\n"));
+        let _ = write!(out, "> {description}\n\n");
     }
     out
 }

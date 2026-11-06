@@ -8,7 +8,7 @@ use std::path::{Component, Path, PathBuf};
 
 /// Every way a chapter can be addressed, mapped to its published path. Authors
 /// link to `README.md`, but mdBook publishes that chapter as `index.md`.
-pub(crate) fn link_targets(pages: &[Page]) -> HashMap<PathBuf, PathBuf> {
+pub fn link_targets(pages: &[Page]) -> HashMap<PathBuf, PathBuf> {
     let mut targets = HashMap::new();
     for page in pages {
         targets.insert(page.path.to_path_buf(), page.path.to_path_buf());
@@ -20,7 +20,7 @@ pub(crate) fn link_targets(pages: &[Page]) -> HashMap<PathBuf, PathBuf> {
 }
 
 #[derive(Clone, Copy)]
-pub(crate) enum LinkStyle<'a> {
+pub enum LinkStyle<'a> {
     /// Stays relative to the chapter's own file. Used for per-page Markdown.
     Relative,
     /// Must survive being read outside the chapter's directory.
@@ -29,7 +29,7 @@ pub(crate) enum LinkStyle<'a> {
 
 /// Points links between chapters at their published locations. Uses a real
 /// Markdown parser, so anything that looks like a link inside code is left be.
-pub(crate) fn rewrite_links(
+pub fn rewrite_links(
     body: &str,
     chapter: &Path,
     links: &HashMap<PathBuf, PathBuf>,
@@ -81,10 +81,13 @@ fn resolve(
         Some((path, fragment)) => (path, format!("#{fragment}")),
         None => (dest, String::new()),
     };
-    if !path.ends_with(".md") || path.starts_with('/') || path.contains("://") {
+    let is_markdown = Path::new(path)
+        .extension()
+        .is_some_and(|ext| ext.eq_ignore_ascii_case("md"));
+    if !is_markdown || path.starts_with('/') || path.contains("://") {
         return None;
     }
-    let dir = chapter.parent().unwrap_or(Path::new(""));
+    let dir = chapter.parent().unwrap_or_else(|| Path::new(""));
     let target = links.get(&normalize(&dir.join(path)))?;
     match style {
         LinkStyle::Absolute { base, extension } => {
@@ -120,7 +123,7 @@ fn normalize(path: &Path) -> PathBuf {
 
 /// Relative links in the generated files whose target does not exist.
 /// Anchors and external URLs are not checked.
-pub(crate) fn broken_links(
+pub fn broken_links(
     written: &[(PathBuf, String)],
     base: &str,
     exists: impl Fn(&Path) -> bool,
@@ -129,10 +132,9 @@ pub(crate) fn broken_links(
     // One report per missing file, however many anchors point into it.
     let mut seen: Vec<(&PathBuf, PathBuf)> = Vec::new();
     for (file, text) in written {
-        let from = file.parent().unwrap_or(Path::new(""));
+        let from = file.parent().unwrap_or_else(|| Path::new(""));
         for event in Parser::new_ext(text, markdown_options()) {
-            let (Event::Start(Tag::Link { dest_url, .. })
-            | Event::Start(Tag::Image { dest_url, .. })) = event
+            let Event::Start(Tag::Link { dest_url, .. } | Tag::Image { dest_url, .. }) = event
             else {
                 continue;
             };

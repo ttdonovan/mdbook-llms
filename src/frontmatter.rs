@@ -1,8 +1,9 @@
 //! YAML frontmatter: detection, removal, and the `description` value.
 
-/// Splits YAML frontmatter from a chapter, returning its description and the
-/// remaining body. mdBook leaves frontmatter in chapter content. Only a block
-/// of YAML-shaped lines counts, so a chapter opening with a `---` rule survives.
+/// Splits YAML frontmatter from a chapter, returning its description and body.
+///
+/// mdBook leaves frontmatter in chapter content. Only a block of YAML-shaped
+/// lines counts, so a chapter opening with a `---` rule survives.
 pub fn split_frontmatter(content: &str) -> (Option<String>, &str) {
     let mut lines = content.split_inclusive('\n');
     if lines.next().map(str::trim_end) != Some("---") {

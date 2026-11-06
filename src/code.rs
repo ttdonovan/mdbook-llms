@@ -14,7 +14,7 @@ enum Hidden {
 /// Keeps the lines mdBook hides in HTML but drops their marker, so code stays
 /// complete and valid. Follows mdBook's rules: `# ` in Rust, else the fence's
 /// `hidelines=` attribute or `output.html.code.hidelines`.
-pub(crate) fn reveal_hidden_lines(body: &str, hidelines: &HashMap<String, String>) -> String {
+pub fn reveal_hidden_lines(body: &str, hidelines: &HashMap<String, String>) -> String {
     let mut edits: Vec<(Range<usize>, String)> = Vec::new();
     let mut mode = None;
     for (event, range) in Parser::new_ext(body, markdown_options()).into_offset_iter() {
@@ -74,10 +74,10 @@ fn reveal_line(line: &str, mode: &Hidden) -> String {
             }),
         Hidden::Prefix(prefix) => rest.strip_prefix(prefix.as_str()),
     };
-    match revealed {
-        Some(code) => format!("{indent}{code}{ending}"),
-        None => line.to_string(),
-    }
+    revealed.map_or_else(
+        || line.to_string(),
+        |code| format!("{indent}{code}{ending}"),
+    )
 }
 
 #[cfg(test)]
