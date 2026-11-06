@@ -1,5 +1,8 @@
 # mdbook-llms
 
+[![crates.io](https://img.shields.io/crates/v/mdbook-llms.svg)](https://crates.io/crates/mdbook-llms)
+[![docs.rs](https://img.shields.io/docsrs/mdbook-llms)](https://docs.rs/mdbook-llms)
+
 An [mdBook](https://rust-lang.github.io/mdBook/) 0.5 renderer that follows the
 [llms.txt](https://llmstxt.org/) convention. It writes:
 
