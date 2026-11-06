@@ -101,6 +101,7 @@ All go under `[output.llms]`.
 | `full` | `true` | Write `llms-full.txt`. |
 | `pages` | `true` | Write per-chapter `.md` files. When `false`, links point at `.html`. |
 | `merge-into-html` | `true` | When HTML also runs, write into its directory rather than `book/llms/`. |
+| `discovery-links` | `true` | When merged into the HTML output, add `<link rel="alternate" type="text/markdown">` and `<link rel="describedby">` to each HTML page, as [llms.txt v2](https://llmstxt.org/) recommends. |
 
 ## Frontmatter
 
@@ -294,6 +295,8 @@ pub struct Config {
     pub site_url: Option<String>,
     /// When the HTML renderer also runs, publish into its directory.
     pub merge_into_html: bool,
+    /// When merged, add llms.txt v2 `alternate` and `describedby` links to HTML pages.
+    pub discovery_links: bool,
 }
 
 impl Default for Config {
@@ -304,6 +307,7 @@ impl Default for Config {
             pages: true,
             site_url: None,
             merge_into_html: true,
+            discovery_links: true,
         }
     }
 }

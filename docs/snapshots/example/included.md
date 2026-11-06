@@ -43,6 +43,8 @@ pub struct Config {
     pub site_url: Option<String>,
     /// When the HTML renderer also runs, publish into its directory.
     pub merge_into_html: bool,
+    /// When merged, add llms.txt v2 `alternate` and `describedby` links to HTML pages.
+    pub discovery_links: bool,
 }
 
 impl Default for Config {
@@ -53,6 +55,7 @@ impl Default for Config {
             pages: true,
             site_url: None,
             merge_into_html: true,
+            discovery_links: true,
         }
     }
 }

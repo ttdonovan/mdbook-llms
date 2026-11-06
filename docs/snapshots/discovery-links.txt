@@ -1,0 +1,17 @@
+./contributing.html:<link rel="alternate" type="text/markdown" href="/mdbook-llms/contributing.md">
+./contributing.html:<link rel="describedby" href="/mdbook-llms/llms.txt">
+./example/frontmatter.html:<link rel="alternate" type="text/markdown" href="/mdbook-llms/example/frontmatter.md">
+./example/frontmatter.html:<link rel="describedby" href="/mdbook-llms/llms.txt">
+./example/included.html:<link rel="alternate" type="text/markdown" href="/mdbook-llms/example/included.md">
+./example/included.html:<link rel="describedby" href="/mdbook-llms/llms.txt">
+./example/index.html:<link rel="alternate" type="text/markdown" href="/mdbook-llms/example/index.md">
+./example/index.html:<link rel="describedby" href="/mdbook-llms/llms.txt">
+./example/links.html:<link rel="alternate" type="text/markdown" href="/mdbook-llms/example/links.md">
+./example/links.html:<link rel="describedby" href="/mdbook-llms/llms.txt">
+./getting-started.html:<link rel="alternate" type="text/markdown" href="/mdbook-llms/getting-started.md">
+./getting-started.html:<link rel="describedby" href="/mdbook-llms/llms.txt">
+./index.html:<link rel="alternate" type="text/markdown" href="/mdbook-llms/getting-started.md">
+./index.html:<link rel="describedby" href="/mdbook-llms/llms.txt">
+./print.html:<link rel="describedby" href="/mdbook-llms/llms.txt">
+./usage.html:<link rel="alternate" type="text/markdown" href="/mdbook-llms/usage.md">
+./usage.html:<link rel="describedby" href="/mdbook-llms/llms.txt">

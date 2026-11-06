@@ -52,6 +52,7 @@ snapshot-build: build
     mkdir -p "{{snapshot_dir}}/out"
     cd "{{snapshot_dir}}/book/html"
     find . -type f \( -name '*.md' -o -name 'llms.txt' -o -name 'llms-full.txt' \) | tar -cf - -T - | tar -xf - -C "{{snapshot_dir}}/out"
+    grep -roE '<link rel="(alternate|describedby)"[^>]*>' --include='*.html' . | LC_ALL=C sort > "{{snapshot_dir}}/out/discovery-links.txt"
 
 # Fail if any llms output differs from the committed snapshots
 snapshot: snapshot-build

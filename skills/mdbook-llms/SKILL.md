@@ -43,11 +43,13 @@ The project's own docs are built with mdbook-llms and published for LLMs:
 - **Hidden Rust lines**: lines hidden with `# ` in Rust code blocks appear in full in the Markdown output.
 - **Draft chapters**: chapters with no file (`[Title]()`) get no entry, and their children move up one level in `llms.txt`.
 - **merge-into-html**: when HTML also runs, the renderer writes into `book/html/` and fails if no HTML output exists there. mdBook still creates an empty `book/llms/` directory, which can be ignored.
+- **Discovery links**: when merged, mdbook-llms edits the finished HTML pages to add `<link rel="alternate" type="text/markdown">` and `<link rel="describedby">` before `</head>`. Set `discovery-links = false` if another tool must own the HTML.
 
 ## Verify
 
 - `llms.txt` exists in the output directory and lists every non-draft chapter, grouped under the `SUMMARY.md` part titles (or `## Contents` if there are none).
 - Links in `llms.txt` use the expected prefix, and chapter pages exist at those paths (`README.md` chapters appear as `index.md`).
 - No HTML page shows a frontmatter block.
+- When merged, chapter HTML pages contain `rel="alternate"` and `rel="describedby"` links that resolve.
 - `{{#include}}` directives are expanded in `llms-full.txt`.
 - When unsure what correct output looks like, compare with the published [llms.txt](https://ttdonovan.github.io/mdbook-llms/llms.txt), which comes from a book with parts, nested chapters, a draft and descriptions.
