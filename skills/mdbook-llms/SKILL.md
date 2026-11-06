@@ -9,6 +9,11 @@ mdbook-llms is an mdBook 0.5 renderer. It writes `llms.txt` (an index of chapter
 
 For every option and its default, read [USAGE.md](https://github.com/ttdonovan/mdbook-llms/blob/main/USAGE.md). This skill covers the steps and the gotchas.
 
+The project's own docs are built with mdbook-llms and published for LLMs:
+
+- [llms.txt](https://ttdonovan.github.io/mdbook-llms/llms.txt): index of every chapter, with descriptions. Fetch this first to find the right page.
+- [llms-full.txt](https://ttdonovan.github.io/mdbook-llms/llms-full.txt): every chapter in one file, including usage and a worked example.
+
 ## Steps
 
 1. Check `mdbook --version` reports 0.5.x. Older versions are not supported.
@@ -45,3 +50,4 @@ For every option and its default, read [USAGE.md](https://github.com/ttdonovan/m
 - Links in `llms.txt` use the expected prefix, and chapter pages exist at those paths (`README.md` chapters appear as `index.md`).
 - No HTML page shows a frontmatter block.
 - `{{#include}}` directives are expanded in `llms-full.txt`.
+- When unsure what correct output looks like, compare with the published [llms.txt](https://ttdonovan.github.io/mdbook-llms/llms.txt), which comes from a book with parts, nested chapters, a draft and descriptions.
