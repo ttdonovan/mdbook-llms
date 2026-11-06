@@ -86,12 +86,16 @@ pub fn run(ctx: &RenderContext) -> Result<()> {
         .unwrap_or_default();
     let extension = if config.pages { "md" } else { "html" };
 
+    // Every generated file, kept to check its links once all are written.
+    let mut written: Vec<(PathBuf, String)> = Vec::new();
     if config.index {
         let index = render_index(ctx, &base, extension);
-        fs::write(dest.join("llms.txt"), index)?;
+        fs::write(dest.join("llms.txt"), &index)?;
+        written.push((PathBuf::from("llms.txt"), index));
     }
     if config.full {
         let full = render_full(ctx, &base, extension, &links, &hidelines);
+        // Not checked: its links come from the pages, which are.
         fs::write(dest.join("llms-full.txt"), full)?;
     }
     if config.pages {
@@ -103,13 +107,83 @@ pub fn run(ctx: &RenderContext) -> Result<()> {
             fs::create_dir_all(path.parent().context("page has no parent directory")?)?;
             let body = rewrite_links(page.body, page.path, &links, LinkStyle::Relative);
             let body = reveal_hidden_lines(&body, &hidelines);
-            fs::write(path, format!("{}\n", body.trim_end()))?;
+            let text = format!("{}\n", body.trim_end());
+            fs::write(path, &text)?;
+            written.push((page.path.to_path_buf(), text));
         }
     }
     if merged && config.discovery_links {
         add_discovery_links(ctx, &dest, &base, &config)?;
     }
+
+    let src = ctx.root.join(&ctx.config.book.src);
+    let exists = |target: &Path| {
+        let extension = target.extension().and_then(|ext| ext.to_str());
+        // Without the HTML output, .html targets can't be checked here.
+        (!merged && extension == Some("html"))
+            || dest.join(target).exists()
+            // Assets stay in src/; a chapter must have been written.
+            || (extension != Some("md") && src.join(target).exists())
+    };
+    for (file, link) in broken_links(&written, &base, exists) {
+        eprintln!(
+            "warning: mdbook-llms: broken link in {}: {link}",
+            file.display()
+        );
+    }
     Ok(())
+}
+
+/// Relative links in the generated files whose target does not exist.
+/// Anchors and external URLs are not checked.
+fn broken_links(
+    written: &[(PathBuf, String)],
+    base: &str,
+    exists: impl Fn(&Path) -> bool,
+) -> Vec<(PathBuf, String)> {
+    let mut broken = Vec::new();
+    // One report per missing file, however many anchors point into it.
+    let mut seen: Vec<(&PathBuf, PathBuf)> = Vec::new();
+    for (file, text) in written {
+        let from = file.parent().unwrap_or(Path::new(""));
+        for event in Parser::new_ext(text, markdown_options()) {
+            let (Event::Start(Tag::Link { dest_url, .. })
+            | Event::Start(Tag::Image { dest_url, .. })) = event
+            else {
+                continue;
+            };
+            let Some(target) = link_target(&dest_url, from, base) else {
+                continue;
+            };
+            if exists(&target) || seen.contains(&(file, target.clone())) {
+                continue;
+            }
+            seen.push((file, target));
+            broken.push((file.clone(), dest_url.to_string()));
+        }
+    }
+    broken
+}
+
+/// The output-relative path a link points at, or `None` when it can't be
+/// checked: external, fragment-only, or root-absolute outside the site URL.
+fn link_target(dest: &str, from: &Path, base: &str) -> Option<PathBuf> {
+    let path = dest
+        .split(['#', '?'])
+        .next()
+        .filter(|path| !path.is_empty())?;
+    if !base.is_empty()
+        && let Some(rest) = path.strip_prefix(base)
+    {
+        return Some(normalize(Path::new(rest)));
+    }
+    let has_scheme = path
+        .split_once(':')
+        .is_some_and(|(scheme, _)| !scheme.contains('/'));
+    if has_scheme || path.starts_with('/') {
+        return None;
+    }
+    Some(normalize(&from.join(path)))
 }
 
 /// Points each HTML page at its Markdown and at `llms.txt`, as llms.txt v2
@@ -850,6 +924,58 @@ mod tests {
         assert_eq!(
             reveal_hidden_lines(body, &none),
             "# Title\n\n    # indented code\n\n- item\n\n  ```rust\n  hidden\n  ```\n"
+        );
+    }
+
+    #[test]
+    fn link_targets_resolve_from_the_file_or_the_site_url() {
+        let guide = Path::new("guide");
+        assert_eq!(
+            link_target("intro.md#top", guide, ""),
+            Some(PathBuf::from("guide/intro.md"))
+        );
+        assert_eq!(
+            link_target("../img/a.png", guide, ""),
+            Some(PathBuf::from("img/a.png"))
+        );
+        assert_eq!(
+            link_target("/book/usage.md", Path::new(""), "/book/"),
+            Some(PathBuf::from("usage.md"))
+        );
+        assert_eq!(
+            link_target("/other/usage.md", Path::new(""), "/book/"),
+            None
+        );
+        assert_eq!(link_target("/usage.md", Path::new(""), ""), None);
+        assert_eq!(link_target("https://example.com/a.md", guide, ""), None);
+        assert_eq!(link_target("mailto:a@example.com", guide, ""), None);
+        assert_eq!(link_target("#section", guide, ""), None);
+    }
+
+    #[test]
+    fn broken_links_are_reported_once_per_file() {
+        let written = vec![
+            (
+                PathBuf::from("guide/intro.md"),
+                "[ok](deep.md) [gone](missing.md) [again](missing.md#x) ![img](../a.png) [ref][r]\n\n[r]: ../nope.md\n".to_string(),
+            ),
+            (PathBuf::from("llms.txt"), "- [Intro](/book/guide/intro.md)\n- [Old](/book/old.md)\n".to_string()),
+        ];
+        let present = [
+            PathBuf::from("guide/deep.md"),
+            PathBuf::from("a.png"),
+            PathBuf::from("guide/intro.md"),
+        ];
+        let broken = broken_links(&written, "/book/", |target| {
+            present.iter().any(|p| p == target)
+        });
+        assert_eq!(
+            broken,
+            vec![
+                (PathBuf::from("guide/intro.md"), "missing.md".to_string()),
+                (PathBuf::from("guide/intro.md"), "../nope.md".to_string()),
+                (PathBuf::from("llms.txt"), "/book/old.md".to_string()),
+            ]
         );
     }
 

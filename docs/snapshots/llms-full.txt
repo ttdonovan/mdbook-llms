@@ -163,7 +163,7 @@ just book
 
 This builds the crate, puts `target/debug` first on `PATH` so mdBook uses the local binaries, and writes the site and llms files to `docs/book/`. Use `just serve` to preview the HTML.
 
-`docs/snapshots/` holds the expected llms output for this book: `llms.txt`, `llms-full.txt` and every per-chapter `.md` file. `just snapshot` builds into `target/book-snapshot/` and fails if any of them differ. After an intended change to the renderer or the docs, run `just snapshot-update` and review the diff.
+`docs/snapshots/` holds the expected llms output for this book: `llms.txt`, `llms-full.txt` and every per-chapter `.md` file. `just snapshot` builds into `target/book-snapshot/` and fails if any of them differ. It also fails if the build prints any `warning: mdbook-llms` broken-link warning. After an intended change to the renderer or the docs, run `just snapshot-update` and review the diff.
 
 ---
 
@@ -240,6 +240,16 @@ In the output:
 - **HTML** links point at `.html` pages, as usual for mdBook.
 - **Per-chapter `.md` files** keep relative `.md` links. A link to a `README.md` chapter is changed to `index.md`, its published path.
 - **`llms-full.txt`** has every chapter in one file, so the links are rewritten to work from there.
+
+## Broken links
+
+After the build, mdbook-llms checks the relative links in `llms.txt` and in every chapter's `.md` file. A missing target, such as a typo or a chapter left out of `SUMMARY.md`, prints a warning like this and the build carries on:
+
+```text
+warning: mdbook-llms: broken link in example/links.md: nowhere.md
+```
+
+Anchors and external URLs are not checked. This repository's `just snapshot` treats these warnings as errors.
 
 ## Limitation: links to README.md
 

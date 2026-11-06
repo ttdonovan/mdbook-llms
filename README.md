@@ -108,6 +108,10 @@ with a horizontal rule is left alone.
 - When merged into the HTML output, each HTML page gets `<link>` tags pointing
   at its `.md` file and at `llms.txt`, including `index.html` and `print.html`.
   Set `discovery-links = false` to leave the HTML untouched.
+- Relative links in `llms.txt` and the per-chapter `.md` files are checked
+  after the build, and each missing target prints a
+  `warning: mdbook-llms: broken link in <file>: <link>` line. Anchors and
+  external URLs are not checked, and the build does not fail.
 
 ## Known limitations
 

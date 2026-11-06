@@ -50,6 +50,7 @@ The project's own docs are built with mdbook-llms and published for LLMs:
 - `llms.txt` exists in the output directory and lists every non-draft chapter, grouped under the `SUMMARY.md` part titles (or `## Contents` if there are none).
 - Links in `llms.txt` use the expected prefix, and chapter pages exist at those paths (`README.md` chapters appear as `index.md`).
 - No HTML page shows a frontmatter block.
+- The build prints no `warning: mdbook-llms: broken link` lines. Each one names the generated file and the link; fix the source chapter, not the output.
 - When merged, chapter HTML pages contain `rel="alternate"` and `rel="describedby"` links that resolve.
 - `{{#include}}` directives are expanded in `llms-full.txt`.
 - When unsure what correct output looks like, compare with the published [llms.txt](https://ttdonovan.github.io/mdbook-llms/llms.txt), which comes from a book with parts, nested chapters, a draft and descriptions.

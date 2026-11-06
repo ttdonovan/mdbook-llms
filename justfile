@@ -48,8 +48,18 @@ snapshot-build: build
     #!/usr/bin/env bash
     set -euo pipefail
     rm -rf "{{snapshot_dir}}"
-    PATH="{{justfile_directory()}}/target/debug:$PATH" mdbook build docs -d "{{snapshot_dir}}/book"
     mkdir -p "{{snapshot_dir}}/out"
+    log="{{snapshot_dir}}/build.log"
+    if ! PATH="{{justfile_directory()}}/target/debug:$PATH" mdbook build docs -d "{{snapshot_dir}}/book" 2> "$log"; then
+        cat "$log" >&2
+        exit 1
+    fi
+    cat "$log" >&2
+    # This repo treats broken links in the llms output as errors
+    if grep -q 'warning: mdbook-llms' "$log"; then
+        echo "error: mdbook-llms reported broken links" >&2
+        exit 1
+    fi
     cd "{{snapshot_dir}}/book/html"
     find . -type f \( -name '*.md' -o -name 'llms.txt' -o -name 'llms-full.txt' \) | tar -cf - -T - | tar -xf - -C "{{snapshot_dir}}/out"
     grep -roE '<link rel="(alternate|describedby)"[^>]*>' --include='*.html' . | LC_ALL=C sort > "{{snapshot_dir}}/out/discovery-links.txt"
