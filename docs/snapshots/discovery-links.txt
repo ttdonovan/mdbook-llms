@@ -2,6 +2,8 @@
 ./contributing.html:<link rel="describedby" href="/mdbook-llms/llms.txt">
 ./example/frontmatter.html:<link rel="alternate" type="text/markdown" href="/mdbook-llms/example/frontmatter.md">
 ./example/frontmatter.html:<link rel="describedby" href="/mdbook-llms/llms.txt">
+./example/hidden-lines.html:<link rel="alternate" type="text/markdown" href="/mdbook-llms/example/hidden-lines.md">
+./example/hidden-lines.html:<link rel="describedby" href="/mdbook-llms/llms.txt">
 ./example/included.html:<link rel="alternate" type="text/markdown" href="/mdbook-llms/example/included.md">
 ./example/included.html:<link rel="describedby" href="/mdbook-llms/llms.txt">
 ./example/index.html:<link rel="alternate" type="text/markdown" href="/mdbook-llms/example/index.md">

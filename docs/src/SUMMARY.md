@@ -11,5 +11,6 @@
 - [Example section](example/README.md)
   - [Frontmatter](example/frontmatter.md)
   - [Links](example/links.md)
+  - [Hidden lines](example/hidden-lines.md)
   - [Draft chapter]()
     - [Included files](example/included.md)

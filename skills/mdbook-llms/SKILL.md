@@ -40,7 +40,7 @@ The project's own docs are built with mdbook-llms and published for LLMs:
 - **Frontmatter detection**: a block only counts if it opens the file with `---`, closes with `---`, and every line between looks like YAML. Anything else is treated as content.
 - **Links to README.md chapters**: mdBook publishes `README.md` as `index.html` but does not rewrite links to it, so the HTML site links to a missing `README.html`. mdbook-llms fixes these links in its own output only. Avoid linking to `README.md` chapters if the HTML site matters.
 - **mdbook serve**: it forces `output.html.site-url` to `/`, so when `[output.llms]` has no `site-url`, served llms links become root-relative (`/usage.md`). Use `mdbook build` for output you check or publish, and do not run serve and build into the same directory at once.
-- **Hidden Rust lines**: lines hidden with `# ` in Rust code blocks appear in full in the Markdown output.
+- **Hidden code lines**: lines mdBook hides in HTML (`# ` in Rust, `hidelines` prefixes elsewhere) appear in the Markdown output as ordinary code, marker removed. This is intended: agents get complete code.
 - **Draft chapters**: chapters with no file (`[Title]()`) get no entry, and their children move up one level in `llms.txt`.
 - **merge-into-html**: when HTML also runs, the renderer writes into `book/html/` and fails if no HTML output exists there. mdBook still creates an empty `book/llms/` directory, which can be ignored.
 - **Discovery links**: when merged, mdbook-llms edits the finished HTML pages to add `<link rel="alternate" type="text/markdown">` and `<link rel="describedby">` before `</head>`. Set `discovery-links = false` if another tool must own the HTML.

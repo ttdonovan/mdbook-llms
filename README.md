@@ -103,6 +103,8 @@ with a horizontal rule is left alone.
   `README.md` links follow the chapter to its published `index.md`.
 - Draft chapters have no page, so they are skipped and their children move up.
 - Standalone builds empty the output directory first, as the HTML renderer does.
+- Code lines mdBook hides in HTML (`# ` in Rust, `hidelines` prefixes elsewhere)
+  are kept in the llms output with the marker removed, so code stays complete.
 - When merged into the HTML output, each HTML page gets `<link>` tags pointing
   at its `.md` file and at `llms.txt`, including `index.html` and `print.html`.
   Set `discovery-links = false` to leave the HTML untouched.
@@ -110,7 +112,6 @@ with a horizontal rule is left alone.
 ## Known limitations
 
 - Requires mdBook 0.5.
-- Rust lines hidden with `# ` in HTML appear in full in the Markdown output.
 - mdBook publishes a `README.md` chapter as `index.html` but does not rewrite
   links to it, so they point at a missing `README.html` in the HTML site. Only
   the llms output fixes them.

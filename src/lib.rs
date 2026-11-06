@@ -1,5 +1,5 @@
 use anyhow::{Context, Result, bail};
-use mdbook_markdown::pulldown_cmark::{Event, Options, Parser, Tag};
+use mdbook_markdown::pulldown_cmark::{CodeBlockKind, Event, Options, Parser, Tag, TagEnd};
 use mdbook_renderer::RenderContext;
 use mdbook_renderer::book::{BookItem, Chapter};
 use serde::Deserialize;
@@ -80,6 +80,10 @@ pub fn run(ctx: &RenderContext) -> Result<()> {
     fs::create_dir_all(&dest)?;
 
     let links = link_targets(ctx);
+    let hidelines: HashMap<String, String> = ctx
+        .config
+        .get("output.html.code.hidelines")?
+        .unwrap_or_default();
     let extension = if config.pages { "md" } else { "html" };
 
     if config.index {
@@ -87,7 +91,7 @@ pub fn run(ctx: &RenderContext) -> Result<()> {
         fs::write(dest.join("llms.txt"), index)?;
     }
     if config.full {
-        let full = render_full(ctx, &base, extension, &links);
+        let full = render_full(ctx, &base, extension, &links, &hidelines);
         fs::write(dest.join("llms-full.txt"), full)?;
     }
     if config.pages {
@@ -98,6 +102,7 @@ pub fn run(ctx: &RenderContext) -> Result<()> {
             let path = dest.join(page.path);
             fs::create_dir_all(path.parent().context("page has no parent directory")?)?;
             let body = rewrite_links(page.body, page.path, &links, LinkStyle::Relative);
+            let body = reveal_hidden_lines(&body, &hidelines);
             fs::write(path, format!("{}\n", body.trim_end()))?;
         }
     }
@@ -414,6 +419,7 @@ fn render_full(
     base: &str,
     extension: &str,
     links: &HashMap<PathBuf, PathBuf>,
+    hidelines: &HashMap<String, String>,
 ) -> String {
     let pages: Vec<String> = ctx
         .book
@@ -423,6 +429,7 @@ fn render_full(
             let body = without_leading_title(page.body, &page.chapter.name);
             let style = LinkStyle::Absolute { base, extension };
             let body = rewrite_links(body, page.path, links, style);
+            let body = reveal_hidden_lines(&body, hidelines);
             let source = page_url(base, page.path, extension);
             format!(
                 "# {}\n\nSource: {source}\n\n{}",
@@ -483,11 +490,7 @@ fn rewrite_links(
     links: &HashMap<PathBuf, PathBuf>,
     style: LinkStyle,
 ) -> String {
-    let options = Options::ENABLE_TABLES
-        | Options::ENABLE_FOOTNOTES
-        | Options::ENABLE_STRIKETHROUGH
-        | Options::ENABLE_TASKLISTS;
-    let parser = Parser::new_ext(body, options);
+    let parser = Parser::new_ext(body, markdown_options());
 
     let mut edits: Vec<(Range<usize>, String)> = Vec::new();
     for (_, definition) in parser.reference_definitions().iter() {
@@ -518,6 +521,97 @@ fn rewrite_links(
         out.replace_range(range, &new);
     }
     out
+}
+
+fn markdown_options() -> Options {
+    Options::ENABLE_TABLES
+        | Options::ENABLE_FOOTNOTES
+        | Options::ENABLE_STRIKETHROUGH
+        | Options::ENABLE_TASKLISTS
+}
+
+/// How mdBook hides lines in one code block.
+enum Hidden {
+    Rust,
+    Prefix(String),
+}
+
+/// Keeps the lines mdBook hides in HTML but drops their marker, so code stays
+/// complete and valid. Follows mdBook's rules: `# ` in Rust, else the fence's
+/// `hidelines=` attribute or `output.html.code.hidelines`.
+fn reveal_hidden_lines(body: &str, hidelines: &HashMap<String, String>) -> String {
+    let mut edits: Vec<(Range<usize>, String)> = Vec::new();
+    let mut mode = None;
+    for (event, range) in Parser::new_ext(body, markdown_options()).into_offset_iter() {
+        match event {
+            Event::Start(Tag::CodeBlock(CodeBlockKind::Fenced(info))) => {
+                mode = hidden_mode(&info, hidelines);
+            }
+            Event::End(TagEnd::CodeBlock) => mode = None,
+            Event::Text(_) => {
+                let (Some(mode), Some(text)) = (&mode, body.get(range.clone())) else {
+                    continue;
+                };
+                let revealed: String = text
+                    .split_inclusive('\n')
+                    .map(|line| reveal_line(line, mode))
+                    .collect();
+                if revealed != text {
+                    edits.push((range, revealed));
+                }
+            }
+            _ => {}
+        }
+    }
+
+    let mut out = String::with_capacity(body.len());
+    let mut last = 0;
+    for (range, new) in edits {
+        out.push_str(body.get(last..range.start).unwrap_or_default());
+        out.push_str(&new);
+        last = range.end;
+    }
+    out.push_str(body.get(last..).unwrap_or_default());
+    out
+}
+
+/// mdBook treats the first word of the fence info as the language.
+fn hidden_mode(info: &str, hidelines: &HashMap<String, String>) -> Option<Hidden> {
+    let mut parts = info.split([' ', '\t', ',']).filter(|part| !part.is_empty());
+    let language = parts.next()?;
+    if language == "rust" {
+        return Some(Hidden::Rust);
+    }
+    parts
+        .find_map(|part| part.strip_prefix("hidelines="))
+        .or_else(|| hidelines.get(language).map(String::as_str))
+        .filter(|prefix| !prefix.is_empty())
+        .map(|prefix| Hidden::Prefix(prefix.to_string()))
+}
+
+fn reveal_line(line: &str, mode: &Hidden) -> String {
+    let content = line.trim_end_matches(['\r', '\n']);
+    let ending = line.get(content.len()..).unwrap_or_default();
+    let rest = content.trim_start();
+    let indent = content
+        .get(..content.len().saturating_sub(rest.len()))
+        .unwrap_or_default();
+    let revealed = match mode {
+        Hidden::Rust => rest
+            .strip_prefix('#')
+            .and_then(|after| match after.chars().next() {
+                // `##` escapes a literal `#`.
+                Some('#') => Some(after),
+                None => Some(""),
+                Some(' ') => after.get(1..),
+                Some(_) => None,
+            }),
+        Hidden::Prefix(prefix) => rest.strip_prefix(prefix.as_str()),
+    };
+    match revealed {
+        Some(code) => format!("{indent}{code}{ending}"),
+        None => line.to_string(),
+    }
 }
 
 fn find_in(body: &str, span: Range<usize>, needle: &str) -> Option<Range<usize>> {
@@ -723,6 +817,40 @@ mod tests {
         assert_eq!(insert_before_head_end(&updated, tags), None);
         assert_eq!(insert_before_head_end("<p>no head</p>", tags), None);
         assert_eq!(escape_attr("a\"b&c"), "a&quot;b&amp;c");
+    }
+
+    #[test]
+    fn hidden_lines_keep_their_code_and_lose_the_marker() {
+        let none = HashMap::new();
+        let rust = "```rust,ignore\n# use std::fs;\n#\n## literal\n#[derive(Debug)]\n    # indented\nlet x = 1;\n```\n";
+        assert_eq!(
+            reveal_hidden_lines(rust, &none),
+            "```rust,ignore\nuse std::fs;\n\n# literal\n#[derive(Debug)]\n    indented\nlet x = 1;\n```\n"
+        );
+
+        let python = "```python\n~import os\nprint(1)\n```\n";
+        let config = HashMap::from([("python".to_string(), "~".to_string())]);
+        assert_eq!(
+            reveal_hidden_lines(python, &config),
+            "```python\nimport os\nprint(1)\n```\n"
+        );
+        assert_eq!(reveal_hidden_lines(python, &none), python);
+
+        let attribute = "```python hidelines=!!!\n!!!import os\n~kept\n```\n";
+        assert_eq!(
+            reveal_hidden_lines(attribute, &config),
+            "```python hidelines=!!!\nimport os\n~kept\n```\n"
+        );
+    }
+
+    #[test]
+    fn hidden_line_markers_outside_fences_are_left_alone() {
+        let none = HashMap::new();
+        let body = "# Title\n\n    # indented code\n\n- item\n\n  ```rust\n  # hidden\n  ```\n";
+        assert_eq!(
+            reveal_hidden_lines(body, &none),
+            "# Title\n\n    # indented code\n\n- item\n\n  ```rust\n  hidden\n  ```\n"
+        );
     }
 
     #[test]
