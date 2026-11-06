@@ -30,7 +30,7 @@ just check
 
 ## Releases
 
-Releases are made by [release-plz](https://release-plz.dev/) from [Conventional Commits](https://www.conventionalcommits.org/), so prefix commit messages with `feat:`, `fix:`, `docs:` and so on, and mark breaking changes with `!` (e.g. `feat!:`). On each push to `main`, release-plz opens or updates a release PR that bumps the version and updates `CHANGELOG.md`. Merging it tags `vX.Y.Z` and creates a GitHub Release. Nothing is published to crates.io.
+Releases are made by [release-plz](https://release-plz.dev/) from [Conventional Commits](https://www.conventionalcommits.org/), so prefix commit messages with `feat:`, `fix:`, `docs:` and so on, and mark breaking changes with `!` (e.g. `feat!:`). On each push to `main`, release-plz opens or updates a release PR that bumps the version and updates `CHANGELOG.md`. Merging it publishes the new version to crates.io through [trusted publishing](https://crates.io/docs/trusted-publishing), tags `vX.Y.Z` and creates a GitHub Release.
 
 ## Building the docs
 

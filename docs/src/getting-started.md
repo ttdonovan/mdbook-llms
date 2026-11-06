@@ -29,7 +29,7 @@ The llms renderer reads the book before the HTML-only preprocessors run, so it s
 Install the binaries:
 
 ```sh
-cargo install --locked --git https://github.com/ttdonovan/mdbook-llms
+cargo install --locked mdbook-llms
 ```
 
 Add the renderer and the frontmatter preprocessor to your `book.toml`:

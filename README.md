@@ -16,7 +16,7 @@ already expanded.
 ## Install
 
 ```sh
-cargo install --locked --git https://github.com/ttdonovan/mdbook-llms
+cargo install --locked mdbook-llms
 ```
 
 From a local checkout, use `cargo install --path .` instead.
