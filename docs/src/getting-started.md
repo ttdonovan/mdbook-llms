@@ -6,8 +6,8 @@ description: What mdbook-llms does and how to try it in a minute
 
 mdbook-llms is an [mdBook](https://rust-lang.github.io/mdBook/) 0.5 renderer that follows the [llms.txt](https://llmstxt.org/) convention. Alongside your HTML site it writes:
 
-- `llms.txt`: an index of every chapter, grouped by SUMMARY.md parts
-- `llms-full.txt`: every chapter in reading order, in one file
+- [`llms.txt`](llms.txt): an index of every chapter, grouped by SUMMARY.md parts
+- [`llms-full.txt`](llms-full.txt): every chapter in reading order, in one file
 - `<chapter>.md`: each chapter's Markdown at the path its HTML would use
 
 ## How it fits into mdBook
