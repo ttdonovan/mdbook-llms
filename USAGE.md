@@ -47,6 +47,7 @@ All go under `[output.llms]`.
 | `full` | `true` | Write `llms-full.txt`. |
 | `pages` | `true` | Write per-chapter `.md` files. When `false`, links point at `.html`. |
 | `merge-into-html` | `true` | When HTML also runs, write into its directory rather than `book/llms/`. |
+| `discovery-links` | `true` | When merged into the HTML output, add `<link rel="alternate" type="text/markdown">` and `<link rel="describedby">` to each HTML page, as [llms.txt v2](https://llmstxt.org/) recommends. |
 
 ## Frontmatter
 

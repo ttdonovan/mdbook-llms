@@ -63,6 +63,7 @@ All go under `[output.llms]`.
 | `full` | `true` | Write `llms-full.txt`. |
 | `pages` | `true` | Write per-chapter `.md` files. When `false`, links point at `.html`. |
 | `merge-into-html` | `true` | When HTML also runs, write into its directory rather than `book/llms/`. |
+| `discovery-links` | `true` | When merged into the HTML output, add `<link rel="alternate" type="text/markdown">` and `<link rel="describedby">` to each HTML page, as [llms.txt v2](https://llmstxt.org/) recommends. |
 
 With `pages = false`, the links only resolve if the HTML site is published too.
 
@@ -102,11 +103,19 @@ with a horizontal rule is left alone.
   `README.md` links follow the chapter to its published `index.md`.
 - Draft chapters have no page, so they are skipped and their children move up.
 - Standalone builds empty the output directory first, as the HTML renderer does.
+- Code lines mdBook hides in HTML (`# ` in Rust, `hidelines` prefixes elsewhere)
+  are kept in the llms output with the marker removed, so code stays complete.
+- When merged into the HTML output, each HTML page gets `<link>` tags pointing
+  at its `.md` file and at `llms.txt`, including `index.html` and `print.html`.
+  Set `discovery-links = false` to leave the HTML untouched.
+- Relative links in `llms.txt` and the per-chapter `.md` files are checked
+  after the build, and each missing target prints a
+  `warning: mdbook-llms: broken link in <file>: <link>` line. Anchors and
+  external URLs are not checked, and the build does not fail.
 
 ## Known limitations
 
 - Requires mdBook 0.5.
-- Rust lines hidden with `# ` in HTML appear in full in the Markdown output.
 - mdBook publishes a `README.md` chapter as `index.html` but does not rewrite
   links to it, so they point at a missing `README.html` in the HTML site. Only
   the llms output fixes them.

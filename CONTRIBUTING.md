@@ -40,4 +40,4 @@ just book
 
 This builds the crate, puts `target/debug` first on `PATH` so mdBook uses the local binaries, and writes the site and llms files to `docs/book/`. Use `just serve` to preview the HTML.
 
-`docs/snapshots/` holds the expected llms output for this book: `llms.txt`, `llms-full.txt` and every per-chapter `.md` file. `just snapshot` builds into `target/book-snapshot/` and fails if any of them differ. After an intended change to the renderer or the docs, run `just snapshot-update` and review the diff.
+`docs/snapshots/` holds the expected llms output for this book: `llms.txt`, `llms-full.txt` and every per-chapter `.md` file. `just snapshot` builds into `target/book-snapshot/` and fails if any of them differ. It also fails if the build prints any `warning: mdbook-llms` broken-link warning. After an intended change to the renderer or the docs, run `just snapshot-update` and review the diff.

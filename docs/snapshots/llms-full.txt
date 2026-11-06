@@ -101,6 +101,7 @@ All go under `[output.llms]`.
 | `full` | `true` | Write `llms-full.txt`. |
 | `pages` | `true` | Write per-chapter `.md` files. When `false`, links point at `.html`. |
 | `merge-into-html` | `true` | When HTML also runs, write into its directory rather than `book/llms/`. |
+| `discovery-links` | `true` | When merged into the HTML output, add `<link rel="alternate" type="text/markdown">` and `<link rel="describedby">` to each HTML page, as [llms.txt v2](https://llmstxt.org/) recommends. |
 
 ## Frontmatter
 
@@ -162,7 +163,7 @@ just book
 
 This builds the crate, puts `target/debug` first on `PATH` so mdBook uses the local binaries, and writes the site and llms files to `docs/book/`. Use `just serve` to preview the HTML.
 
-`docs/snapshots/` holds the expected llms output for this book: `llms.txt`, `llms-full.txt` and every per-chapter `.md` file. `just snapshot` builds into `target/book-snapshot/` and fails if any of them differ. After an intended change to the renderer or the docs, run `just snapshot-update` and review the diff.
+`docs/snapshots/` holds the expected llms output for this book: `llms.txt`, `llms-full.txt` and every per-chapter `.md` file. `just snapshot` builds into `target/book-snapshot/` and fails if any of them differ. It also fails if the build prints any `warning: mdbook-llms` broken-link warning. After an intended change to the renderer or the docs, run `just snapshot-update` and review the diff.
 
 ---
 
@@ -197,6 +198,7 @@ This is a committed snapshot of `book/html/llms.txt`. `just snapshot` fails if i
 - [Example section](/mdbook-llms/example/index.md): A worked example showing each chapter's source next to the llms.txt it produces
   - [Frontmatter](/mdbook-llms/example/frontmatter.md): Frontmatter keys, and which ones reach the output
   - [Links](/mdbook-llms/example/links.md): How links between chapters are rewritten for each output
+  - [Hidden lines](/mdbook-llms/example/hidden-lines.md): Code lines hidden in the HTML are kept, without their marker, in the Markdown output
   - [Included files](/mdbook-llms/example/included.md): An {{#include}}-built chapter, listed one level up because its parent is a draft
 ```
 
@@ -239,11 +241,74 @@ In the output:
 - **Per-chapter `.md` files** keep relative `.md` links. A link to a `README.md` chapter is changed to `index.md`, its published path.
 - **`llms-full.txt`** has every chapter in one file, so the links are rewritten to work from there.
 
+## Broken links
+
+After the build, mdbook-llms checks the relative links in `llms.txt` and in every chapter's `.md` file. A missing target, such as a typo or a chapter left out of `SUMMARY.md`, prints a warning like this and the build carries on:
+
+```text
+warning: mdbook-llms: broken link in example/links.md: nowhere.md
+```
+
+Anchors and external URLs are not checked. This repository's `just snapshot` treats these warnings as errors.
+
 ## Limitation: links to README.md
 
 mdBook publishes a `README.md` chapter as `index.html`, but its HTML renderer does not rewrite links to it. A link like `[Overview](README.md)` becomes `README.html`, which does not exist, so it is broken in the HTML site.
 
 mdbook-llms changes these links to `index.md` in its own output, but cannot fix the HTML. This book avoids linking to `README.md` chapters for that reason.
+
+---
+
+# Hidden lines
+
+Source: /mdbook-llms/example/hidden-lines.md
+
+mdBook can hide boilerplate lines in code blocks. In the HTML they are folded away behind a toggle; in the llms output they are kept as ordinary code with the marker removed, so an agent gets complete, valid code.
+
+The rules match mdBook's:
+
+- Rust: a line starting with `# ` (or a lone `#`) is hidden, and `##` stands for a literal `#`.
+- Other languages: lines starting with the prefix set in `[output.html.code.hidelines]`, or with a fence attribute like `hidelines=~`.
+
+## Source
+
+````markdown
+```rust
+# use std::collections::HashMap;
+# fn main() {
+let mut counts = HashMap::new();
+counts.insert("pages", 7);
+let heading = r#"
+## Pages
+"#;
+# }
+```
+
+```python hidelines=~
+~import json
+print(json.dumps({"pages": 7}))
+```
+````
+
+## Result
+
+The same blocks, rendered by this book. The HTML page hides the marked lines; this page's `.md` file and `llms-full.txt` show them in full.
+
+```rust
+use std::collections::HashMap;
+fn main() {
+let mut counts = HashMap::new();
+counts.insert("pages", 7);
+let heading = r#"
+# Pages
+"#;
+}
+```
+
+```python hidelines=~
+import json
+print(json.dumps({"pages": 7}))
+```
 
 ---
 
@@ -294,6 +359,8 @@ pub struct Config {
     pub site_url: Option<String>,
     /// When the HTML renderer also runs, publish into its directory.
     pub merge_into_html: bool,
+    /// When merged, add llms.txt v2 `alternate` and `describedby` links to HTML pages.
+    pub discovery_links: bool,
 }
 
 impl Default for Config {
@@ -304,6 +371,7 @@ impl Default for Config {
             pages: true,
             site_url: None,
             merge_into_html: true,
+            discovery_links: true,
         }
     }
 }

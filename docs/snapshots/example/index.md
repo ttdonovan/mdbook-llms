@@ -27,5 +27,6 @@ This is a committed snapshot of `book/html/llms.txt`. `just snapshot` fails if i
 - [Example section](/mdbook-llms/example/index.md): A worked example showing each chapter's source next to the llms.txt it produces
   - [Frontmatter](/mdbook-llms/example/frontmatter.md): Frontmatter keys, and which ones reach the output
   - [Links](/mdbook-llms/example/links.md): How links between chapters are rewritten for each output
+  - [Hidden lines](/mdbook-llms/example/hidden-lines.md): Code lines hidden in the HTML are kept, without their marker, in the Markdown output
   - [Included files](/mdbook-llms/example/included.md): An {{#include}}-built chapter, listed one level up because its parent is a draft
 ```
