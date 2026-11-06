@@ -1,0 +1,273 @@
+# mdbook-llms
+
+---
+
+# Getting started
+
+Source: /mdbook-llms/getting-started.md
+
+mdbook-llms is an [mdBook](https://rust-lang.github.io/mdBook/) 0.5 renderer that follows the [llms.txt](https://llmstxt.org/) convention. Alongside your HTML site it writes:
+
+- `llms.txt`: an index of every chapter, grouped by SUMMARY.md parts
+- `llms-full.txt`: every chapter in reading order, in one file
+- `<chapter>.md`: each chapter's Markdown at the path its HTML would use
+
+## How it fits into mdBook
+
+```mermaid
+flowchart LR
+    A[SUMMARY.md + chapters] --> B["links preprocessor<br/>expands includes"]
+    B --> C["strip-frontmatter + mermaid<br/>(HTML only)"]
+    C --> D[html renderer] --> E[book/html/*.html]
+    B --> F[mdbook-llms renderer]
+    F --> G["llms.txt<br/>llms-full.txt<br/>chapter .md"]
+    G -. written next to .-> E
+```
+
+The llms renderer reads the book before the HTML-only preprocessors run, so it sees chapter frontmatter and keeps Mermaid blocks as plain fenced code.
+
+## Quick start
+
+Install the binaries:
+
+```sh
+cargo install --locked --git https://github.com/ttdonovan/mdbook-llms
+```
+
+Add the renderer and the frontmatter preprocessor to your `book.toml`:
+
+```toml
+[preprocessor.strip-frontmatter]
+
+[output.html]
+
+[output.llms]
+```
+
+Run `mdbook build`. The llms files appear in `book/html/`, next to the site.
+
+This book is built the same way. See [Usage](/mdbook-llms/usage.md) for every option and [Contributing](/mdbook-llms/contributing.md) to work on the crate.
+
+---
+
+# Usage
+
+Source: /mdbook-llms/usage.md
+
+## Install
+
+```sh
+cargo install --locked --git https://github.com/ttdonovan/mdbook-llms
+```
+
+From a local checkout, use `cargo install --path .` instead.
+
+This installs two binaries: the `mdbook-llms` renderer and the `mdbook-strip-frontmatter` preprocessor. Both must be on your `PATH` when you run `mdbook build`.
+
+## Configure
+
+To generate only the llms files, list only this output. mdBook then skips HTML, CSS and JS completely, and the files land directly in `book/`:
+
+```toml
+[output.llms]
+site-url = "https://example.com/my-book"
+```
+
+To publish alongside the site, keep both. The files go into `book/html/`, next to the HTML:
+
+```toml
+[preprocessor.strip-frontmatter]
+
+[output.html]
+site-url = "/my-book/"
+
+[output.llms]
+```
+
+To skip HTML for one build without touching `book.toml`:
+
+```sh
+MDBOOK_OUTPUT='{"llms":{}}' mdbook build
+```
+
+## Options
+
+All go under `[output.llms]`.
+
+| Key | Default | Effect |
+|---|---|---|
+| `site-url` | `output.html.site-url` | Prefix for links. Without either, links are relative to the output root. |
+| `index` | `true` | Write `llms.txt`. |
+| `full` | `true` | Write `llms-full.txt`. |
+| `pages` | `true` | Write per-chapter `.md` files. When `false`, links point at `.html`. |
+| `merge-into-html` | `true` | When HTML also runs, write into its directory rather than `book/llms/`. |
+
+## Frontmatter
+
+A `description` key in a chapter's YAML frontmatter adds text to that chapter's `llms.txt` entry. Other keys are allowed and removed from all output:
+
+```markdown
+---
+description: How to install the CLI
+---
+
+# Install
+```
+
+Add `[preprocessor.strip-frontmatter]` whenever HTML is enabled, or the HTML pages will show the block.
+
+---
+
+# Contributing
+
+Source: /mdbook-llms/contributing.md
+
+## Prerequisites
+
+- Rust (edition 2024)
+- [just](https://github.com/casey/just)
+- [mdBook](https://rust-lang.github.io/mdBook/) 0.5
+- [mdbook-mermaid](https://github.com/badboy/mdbook-mermaid) 0.17
+- [cargo-audit](https://github.com/rustsec/rustsec/tree/main/cargo-audit)
+
+`just setup` installs mdBook and mdbook-mermaid at the versions the docs are tested with.
+
+## Layout
+
+- `src/lib.rs`: config, link rewriting, frontmatter parsing and output writing.
+- `src/main.rs`: the `mdbook-llms` renderer binary.
+- `src/bin/mdbook-strip-frontmatter.rs`: the frontmatter preprocessor binary.
+- `docs/`: this book, built with the renderer from the working tree.
+
+## Workflow
+
+Run `just` to list recipes. Before opening a pull request, run:
+
+```sh
+just fmt
+just check
+```
+
+`check` runs `fmt-check`, `clippy` (warnings are errors), `test` and `audit`.
+
+## Releases
+
+Releases are made by [release-plz](https://release-plz.dev/) from [Conventional Commits](https://www.conventionalcommits.org/), so prefix commit messages with `feat:`, `fix:`, `docs:` and so on, and mark breaking changes with `!` (e.g. `feat!:`). On each push to `main`, release-plz opens or updates a release PR that bumps the version and updates `CHANGELOG.md`. Merging it tags `vX.Y.Z` and creates a GitHub Release. Nothing is published to crates.io.
+
+## Building the docs
+
+```sh
+just book
+```
+
+This builds the crate, puts `target/debug` first on `PATH` so mdBook uses the local binaries, and writes the site and llms files to `docs/book/`. Use `just serve` to preview the HTML.
+
+`docs/snapshots/` holds the expected llms output for this book: `llms.txt`, `llms-full.txt` and every per-chapter `.md` file. `just snapshot` builds into `target/book-snapshot/` and fails if any of them differ. After an intended change to the renderer or the docs, run `just snapshot-update` and review the diff.
+
+---
+
+# Example section
+
+Source: /mdbook-llms/example/index.md
+
+This section exists to show what mdbook-llms produces. Each chapter exercises one feature, and this page shows the resulting `llms.txt` for the whole book.
+
+## What it shows
+
+- **Parts**: `# Guide` and `# Example` in `SUMMARY.md` become `##` headings in `llms.txt`.
+- **Section pages**: this file is `example/README.md`, so it is published as `example/index.md`.
+- **Descriptions**: each chapter's frontmatter `description` follows its link.
+- **Drafts**: `Draft chapter` has no file, so it is left out and [Included files](/mdbook-llms/example/included.md) moves up a level.
+
+## Generated llms.txt
+
+This is a committed snapshot of `book/html/llms.txt`. `just snapshot` fails if it no longer matches the build.
+
+```text
+# mdbook-llms
+
+## Guide
+
+- [Getting started](/mdbook-llms/getting-started.md): What mdbook-llms does and how to try it in a minute
+- [Usage](/mdbook-llms/usage.md): Install, configure and the full list of `[output.llms]` options
+- [Contributing](/mdbook-llms/contributing.md): Prerequisites, project layout and the just-based dev workflow
+
+## Example
+
+- [Example section](/mdbook-llms/example/index.md): A worked example showing each chapter's source next to the llms.txt it produces
+  - [Frontmatter](/mdbook-llms/example/frontmatter.md): Frontmatter keys, and which ones reach the output
+  - [Links](/mdbook-llms/example/links.md): How links between chapters are rewritten for each output
+  - [Included files](/mdbook-llms/example/included.md): An {{#include}}-built chapter, listed one level up because its parent is a draft
+```
+
+---
+
+# Frontmatter
+
+Source: /mdbook-llms/example/frontmatter.md
+
+This chapter's source opens with:
+
+```yaml
+---
+description: Frontmatter keys, and which ones reach the output
+tags:
+  - example
+  - frontmatter
+---
+```
+
+- `description` is added to this chapter's line in `llms.txt`.
+- `tags` is allowed and removed. It appears nowhere in the HTML or llms output.
+- The block itself is removed from the HTML page by `strip-frontmatter` and from the Markdown output by `mdbook-llms`.
+
+---
+
+# Links
+
+Source: /mdbook-llms/example/links.md
+
+The source of this chapter links to other chapters by their `.md` paths:
+
+- [Usage](/mdbook-llms/usage.md)
+- [Usage options](/mdbook-llms/usage.md#options)
+- [Frontmatter](/mdbook-llms/example/frontmatter.md)
+
+In the output:
+
+- **HTML** links point at `.html` pages, as usual for mdBook.
+- **Per-chapter `.md` files** keep relative `.md` links. A link to a `README.md` chapter is changed to `index.md`, its published path.
+- **`llms-full.txt`** has every chapter in one file, so the links are rewritten to work from there.
+
+## Limitation: links to README.md
+
+mdBook publishes a `README.md` chapter as `index.html`, but its HTML renderer does not rewrite links to it. A link like `[Overview](README.md)` becomes `README.html`, which does not exist, so it is broken in the HTML site.
+
+mdbook-llms changes these links to `index.md` in its own output, but cannot fix the HTML. This book avoids linking to `README.md` chapters for that reason.
+
+---
+
+# Included files
+
+Source: /mdbook-llms/example/included.md
+
+mdbook-llms reads the book after mdBook's links preprocessor has run, so `{{#include}}` is already expanded in every output. This is this book's own `book.toml`, included from outside `src/`:
+
+```toml
+[book]
+title = "mdbook-llms"
+src = "src"
+
+[preprocessor.strip-frontmatter]
+
+[preprocessor.mermaid]
+command = "mdbook-mermaid"
+
+[output.html]
+site-url = "/mdbook-llms/"
+additional-js = ["mermaid.min.js", "mermaid-init.js"]
+
+[output.llms]
+```
+
+In `SUMMARY.md` this chapter sits under `Draft chapter`, which has no file. Drafts get no page, so in `llms.txt` this chapter is listed one level up instead of disappearing.

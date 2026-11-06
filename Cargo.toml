@@ -1,0 +1,16 @@
+[package]
+name = "mdbook-llms"
+version = "0.1.0"
+edition = "2024"
+description = "mdBook 0.5 renderer that generates llms.txt, llms-full.txt and per-page Markdown"
+license = "MIT"
+repository = "https://github.com/ttdonovan/mdbook-llms"
+keywords = ["mdbook", "llms", "llms-txt", "documentation"]
+
+[dependencies]
+anyhow = "1"
+mdbook-markdown = "0.5"
+mdbook-preprocessor = "0.5"
+mdbook-renderer = "0.5"
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"

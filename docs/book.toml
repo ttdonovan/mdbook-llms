@@ -1,0 +1,14 @@
+[book]
+title = "mdbook-llms"
+src = "src"
+
+[preprocessor.strip-frontmatter]
+
+[preprocessor.mermaid]
+command = "mdbook-mermaid"
+
+[output.html]
+site-url = "/mdbook-llms/"
+additional-js = ["mermaid.min.js", "mermaid-init.js"]
+
+[output.llms]

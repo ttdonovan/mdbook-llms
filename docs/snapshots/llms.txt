@@ -1,0 +1,14 @@
+# mdbook-llms
+
+## Guide
+
+- [Getting started](/mdbook-llms/getting-started.md): What mdbook-llms does and how to try it in a minute
+- [Usage](/mdbook-llms/usage.md): Install, configure and the full list of `[output.llms]` options
+- [Contributing](/mdbook-llms/contributing.md): Prerequisites, project layout and the just-based dev workflow
+
+## Example
+
+- [Example section](/mdbook-llms/example/index.md): A worked example showing each chapter's source next to the llms.txt it produces
+  - [Frontmatter](/mdbook-llms/example/frontmatter.md): Frontmatter keys, and which ones reach the output
+  - [Links](/mdbook-llms/example/links.md): How links between chapters are rewritten for each output
+  - [Included files](/mdbook-llms/example/included.md): An {{#include}}-built chapter, listed one level up because its parent is a draft

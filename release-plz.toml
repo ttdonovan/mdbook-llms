@@ -1,0 +1,5 @@
+[workspace]
+# Version from git tags; never publish to crates.io
+git_only = true
+# Release only when the release PR is merged
+release_always = false
