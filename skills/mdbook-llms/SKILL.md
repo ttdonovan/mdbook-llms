@@ -12,7 +12,7 @@ For every option and its default, read [USAGE.md](https://github.com/ttdonovan/m
 The project's own docs are built with mdbook-llms and published for LLMs:
 
 - [llms.txt](https://ttdonovan.github.io/mdbook-llms/llms.txt): index of every chapter, with descriptions. Fetch this first to find the right page.
-- [llms-full.txt](https://ttdonovan.github.io/mdbook-llms/llms-full.txt): every chapter in one file, including usage and a worked example.
+- [llms-full.txt](https://ttdonovan.github.io/mdbook-llms/llms-full.txt): every chapter in one file, including usage, a worked example and the `Config` source.
 
 ## Steps
 
