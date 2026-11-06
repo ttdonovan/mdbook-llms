@@ -8,13 +8,15 @@ permissions:
   contents: read
 
 jobs:
-  # Tag and create a GitHub Release when the release PR is merged
+  # Publish to crates.io, tag and create a GitHub Release when the release PR is merged
   release:
     if: github.repository_owner == 'ttdonovan'
     runs-on: ubuntu-latest
     permissions:
       contents: write
       pull-requests: read
+      # crates.io trusted publishing; no CARGO_REGISTRY_TOKEN needed
+      id-token: write
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:

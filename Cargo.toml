@@ -5,7 +5,9 @@ edition = "2024"
 description = "mdBook 0.5 renderer that generates llms.txt, llms-full.txt and per-page Markdown"
 license = "MIT"
 repository = "https://github.com/ttdonovan/mdbook-llms"
+homepage = "https://ttdonovan.github.io/mdbook-llms/"
 keywords = ["mdbook", "llms", "llms-txt", "documentation"]
+include = ["/src/**/*.rs", "/README.md", "/LICENSE", "/CHANGELOG.md"]
 
 [dependencies]
 anyhow = "1"

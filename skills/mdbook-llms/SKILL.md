@@ -17,7 +17,7 @@ The project's own docs are built with mdbook-llms and published for LLMs:
 ## Steps
 
 1. Check `mdbook --version` reports 0.5.x. Older versions are not supported.
-2. Install both binaries with `cargo install --locked --git https://github.com/ttdonovan/mdbook-llms` (or `cargo install --path .` from a checkout), and confirm `mdbook-llms` and `mdbook-strip-frontmatter` are on `PATH`.
+2. Install both binaries with `cargo install --locked mdbook-llms`, and confirm `mdbook-llms` and `mdbook-strip-frontmatter` are on `PATH`.
 3. Decide between the two layouts in `book.toml`:
    - Alongside the HTML site (usual case): keep `[output.html]`, add `[output.llms]` and `[preprocessor.strip-frontmatter]`. Files go into `book/html/`.
    - llms output only: list only `[output.llms]`. Files go into `book/`, and the strip-frontmatter preprocessor is not needed.
