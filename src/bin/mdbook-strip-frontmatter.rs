@@ -7,17 +7,22 @@ use mdbook_preprocessor::book::BookItem;
 use mdbook_preprocessor::parse_input;
 use std::env;
 use std::io;
-use std::process::exit;
+use std::process::ExitCode;
 
 /// `mdbook-llms` reads the frontmatter itself, so it has to arrive intact.
 const SKIPPED_RENDERER: &str = "llms";
 
-fn main() -> Result<()> {
+fn main() -> Result<ExitCode> {
     let args: Vec<String> = env::args().skip(1).collect();
     if let [command, renderer] = args.as_slice()
         && command == "supports"
     {
-        exit(if renderer == SKIPPED_RENDERER { 1 } else { 0 });
+        // mdBook reads a non-zero exit as "not supported".
+        return Ok(if renderer == SKIPPED_RENDERER {
+            ExitCode::FAILURE
+        } else {
+            ExitCode::SUCCESS
+        });
     }
 
     let (_context, mut book) = parse_input(io::stdin())?;
@@ -28,5 +33,5 @@ fn main() -> Result<()> {
         }
     });
     serde_json::to_writer(io::stdout(), &book)?;
-    Ok(())
+    Ok(ExitCode::SUCCESS)
 }
