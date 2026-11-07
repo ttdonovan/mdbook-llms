@@ -43,7 +43,7 @@ The project's own docs are built with mdbook-llms and published for LLMs:
 - **Hidden code lines**: lines mdBook hides in HTML (`# ` in Rust, `hidelines` prefixes elsewhere) appear in the Markdown output as ordinary code, marker removed. This is intended: agents get complete code.
 - **Draft chapters**: chapters with no file (`[Title]()`) get no entry, and their children move up one level in `llms.txt`.
 - **merge-into-html**: when HTML also runs, the renderer writes into `book/html/` and fails if no HTML output exists there. mdBook still creates an empty `book/llms/` directory, which can be ignored.
-- **Optional files**: each `[[output.llms.optional]]` path is under `src/` and copied to the output, except `llms-full.txt`, which the renderer writes; a listed file that is missing fails the build. They are listed under `## Optional`, after every part.
+- **Optional files**: each `[[output.llms.optional-files]]` path is under `src/` and copied to the output, except `llms-full.txt`, which the renderer writes; a listed file that is missing fails the build. They are listed under `## Optional`, after every part.
 - **Discovery links**: when merged, mdbook-llms edits the finished HTML pages to add `<link rel="alternate" type="text/markdown">` and `<link rel="describedby">` before `</head>`. Set `discovery-links = false` if another tool must own the HTML.
 
 ## Verify

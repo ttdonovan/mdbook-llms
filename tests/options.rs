@@ -57,11 +57,11 @@ title = "Model"
 sizes = true
 preamble = "preamble.md"
 
-[[output.llms.optional]]
+[[output.llms.optional-files]]
 path = "llms-full.txt"
 description = "Every page in one file"
 
-[[output.llms.optional]]
+[[output.llms.optional-files]]
 path = "data/model.json"
 title = "model.json"
 description = "The model as JSON"
@@ -98,10 +98,23 @@ fn without_the_options_the_index_is_as_before() {
 fn a_missing_optional_file_fails_the_build() {
     let (root, ctx) = book(
         "missing",
-        "[book]\ntitle = \"Model\"\n\n[output.llms]\n\n[[output.llms.optional]]\npath = \"nope.json\"\n",
+        "[book]\ntitle = \"Model\"\n\n[output.llms]\n\n[[output.llms.optional-files]]\npath = \"nope.json\"\n",
     );
     let err = mdbook_llms::run(&ctx).expect_err("a missing file is an error");
     assert!(err.to_string().contains("nope.json"), "{err}");
+    let _ = fs::remove_dir_all(&root);
+}
+
+/// mdBook reads `optional` and `command` under every output itself, so they
+/// must parse beside this renderer's own keys.
+#[test]
+fn mdbooks_own_output_keys_still_parse() {
+    let (root, ctx) = book(
+        "mdbook-keys",
+        "[book]\ntitle = \"Model\"\n\n[output.llms]\noptional = true\ncommand = \"mdbook-llms\"\n\n[[output.llms.optional-files]]\npath = \"data/model.json\"\n",
+    );
+    mdbook_llms::run(&ctx).expect("render");
+    assert!(read(&root, "llms.txt").contains("## Optional\n\n- [model.json](data/model.json)"));
     let _ = fs::remove_dir_all(&root);
 }
 
