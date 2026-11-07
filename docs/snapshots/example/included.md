@@ -49,8 +49,9 @@ pub struct Config {
     pub sizes: bool,
     /// A file under `src/` whose text follows the header of `llms.txt` and `llms-full.txt`.
     pub preamble: Option<PathBuf>,
-    /// Files listed under `## Optional` in `llms.txt`.
-    pub optional: Vec<Optional>,
+    /// Files listed under `## Optional` in `llms.txt`. Not `optional`, which
+    /// mdBook reads under every output as a bool of its own.
+    pub optional_files: Vec<Optional>,
 }
 
 /// A file that is not a chapter, listed under `## Optional`: copied from
@@ -77,7 +78,7 @@ impl Default for Config {
             discovery_links: true,
             sizes: false,
             preamble: None,
-            optional: Vec::new(),
+            optional_files: Vec::new(),
         }
     }
 }

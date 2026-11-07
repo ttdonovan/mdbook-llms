@@ -8,7 +8,7 @@ mod render;
 
 pub use frontmatter::split_frontmatter;
 
-/// The name of the full text, which an `optional` entry may list.
+/// The name of the full text, which an `optional-files` entry may list.
 const FULL: &str = "llms-full.txt";
 
 use anyhow::{Context, Result, bail};
@@ -47,8 +47,9 @@ pub struct Config {
     pub sizes: bool,
     /// A file under `src/` whose text follows the header of `llms.txt` and `llms-full.txt`.
     pub preamble: Option<PathBuf>,
-    /// Files listed under `## Optional` in `llms.txt`.
-    pub optional: Vec<Optional>,
+    /// Files listed under `## Optional` in `llms.txt`. Not `optional`, which
+    /// mdBook reads under every output as a bool of its own.
+    pub optional_files: Vec<Optional>,
 }
 
 /// A file that is not a chapter, listed under `## Optional`: copied from
@@ -75,7 +76,7 @@ impl Default for Config {
             discovery_links: true,
             sizes: false,
             preamble: None,
-            optional: Vec::new(),
+            optional_files: Vec::new(),
         }
     }
 }
@@ -177,7 +178,7 @@ pub fn run(ctx: &RenderContext) -> Result<()> {
         // Not checked: its links come from the pages, which are.
         fs::write(dest.join(FULL), full)?;
     }
-    for (entry, contents) in config.optional.iter().zip(&optional) {
+    for (entry, contents) in config.optional_files.iter().zip(&optional) {
         if entry.path != Path::new(FULL) {
             let path = dest.join(&entry.path);
             fs::create_dir_all(
@@ -209,7 +210,7 @@ fn optional_entries<'a>(
     base: &str,
 ) -> Vec<render::OptionalEntry<'a>> {
     config
-        .optional
+        .optional_files
         .iter()
         .zip(contents)
         .map(|(entry, contents)| render::OptionalEntry {
@@ -232,7 +233,7 @@ fn read_source(ctx: &RenderContext, path: &Path) -> Result<String> {
     fs::read_to_string(&full).with_context(|| format!("can't read {}", full.display()))
 }
 
-/// Each `optional` entry's contents, in order: `llms-full.txt` as written,
+/// Each `optional-files` entry's contents, in order: `llms-full.txt` as written,
 /// any other file read from `src/`.
 fn optional_files(
     ctx: &RenderContext,
@@ -240,7 +241,7 @@ fn optional_files(
     full: Option<&str>,
 ) -> Result<Vec<Vec<u8>>> {
     config
-        .optional
+        .optional_files
         .iter()
         .map(|entry| match full {
             Some(full) if entry.path == Path::new(FULL) => Ok(full.as_bytes().to_vec()),

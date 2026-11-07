@@ -66,7 +66,7 @@ All go under `[output.llms]`.
 | `discovery-links` | `true` | When merged into the HTML output, add `<link rel="alternate" type="text/markdown">` and `<link rel="describedby">` to each HTML page, as [llms.txt v2](https://llmstxt.org/) recommends. |
 | `sizes` | `false` | End each `llms.txt` entry with its file's size, as `(about 1.4k tokens)`: a quarter of its bytes, rounded up to the hundred below a thousand and to a tenth of a thousand above. |
 | `preamble` | none | A file under `src/` whose text goes after the title and description of `llms.txt` and `llms-full.txt`. |
-| `optional` | none | Files that are not chapters, listed under `## Optional` at the end of `llms.txt` (see below). |
+| `optional-files` | none | Files that are not chapters, listed under `## Optional` at the end of `llms.txt` (see below). |
 
 With `pages = false`, the links only resolve if the HTML site is published too.
 
@@ -74,14 +74,14 @@ With `pages = false`, the links only resolve if the HTML site is published too.
 
 The [llms.txt convention](https://llmstxt.org/) ends the index with an
 `## Optional` section for what a reader may skip. List each file under
-`[[output.llms.optional]]`:
+`[[output.llms.optional-files]]`:
 
 ```toml
-[[output.llms.optional]]
+[[output.llms.optional-files]]
 path = "llms-full.txt"
 description = "Every chapter in one file"
 
-[[output.llms.optional]]
+[[output.llms.optional-files]]
 path = "data/model.json"
 title = "model.json"
 description = "The whole model as JSON"

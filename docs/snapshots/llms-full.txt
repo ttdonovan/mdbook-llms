@@ -104,18 +104,18 @@ All go under `[output.llms]`.
 | `discovery-links` | `true` | When merged into the HTML output, add `<link rel="alternate" type="text/markdown">` and `<link rel="describedby">` to each HTML page, as [llms.txt v2](https://llmstxt.org/) recommends. |
 | `sizes` | `false` | End each `llms.txt` entry with its file's size, as `(about 1.4k tokens)`: a quarter of its bytes, rounded up to the hundred below a thousand and to a tenth of a thousand above. |
 | `preamble` | none | A file under `src/` whose text goes after the title and description of `llms.txt` and `llms-full.txt`. |
-| `optional` | none | Files that are not chapters, listed under `## Optional` at the end of `llms.txt` (see below). |
+| `optional-files` | none | Files that are not chapters, listed under `## Optional` at the end of `llms.txt` (see below). |
 
 ## Optional files
 
-The [llms.txt convention](https://llmstxt.org/) ends the index with an `## Optional` section for what a reader may skip. List each file under `[[output.llms.optional]]`:
+The [llms.txt convention](https://llmstxt.org/) ends the index with an `## Optional` section for what a reader may skip. List each file under `[[output.llms.optional-files]]`:
 
 ```toml
-[[output.llms.optional]]
+[[output.llms.optional-files]]
 path = "llms-full.txt"
 description = "Every chapter in one file"
 
-[[output.llms.optional]]
+[[output.llms.optional-files]]
 path = "data/model.json"
 title = "model.json"
 description = "The whole model as JSON"
@@ -385,8 +385,9 @@ pub struct Config {
     pub sizes: bool,
     /// A file under `src/` whose text follows the header of `llms.txt` and `llms-full.txt`.
     pub preamble: Option<PathBuf>,
-    /// Files listed under `## Optional` in `llms.txt`.
-    pub optional: Vec<Optional>,
+    /// Files listed under `## Optional` in `llms.txt`. Not `optional`, which
+    /// mdBook reads under every output as a bool of its own.
+    pub optional_files: Vec<Optional>,
 }
 
 /// A file that is not a chapter, listed under `## Optional`: copied from
@@ -413,7 +414,7 @@ impl Default for Config {
             discovery_links: true,
             sizes: false,
             preamble: None,
-            optional: Vec::new(),
+            optional_files: Vec::new(),
         }
     }
 }
