@@ -45,6 +45,25 @@ pub struct Config {
     pub merge_into_html: bool,
     /// When merged, add llms.txt v2 `alternate` and `describedby` links to HTML pages.
     pub discovery_links: bool,
+    /// End each `llms.txt` entry with its file's size in tokens.
+    pub sizes: bool,
+    /// A file under `src/` whose text follows the header of `llms.txt` and `llms-full.txt`.
+    pub preamble: Option<PathBuf>,
+    /// Files listed under `## Optional` in `llms.txt`.
+    pub optional: Vec<Optional>,
+}
+
+/// A file that is not a chapter, listed under `## Optional`: copied from
+/// `src/`, or `llms-full.txt`, which this renderer writes.
+#[derive(Debug, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct Optional {
+    /// Its path under `src/` and in the output.
+    pub path: PathBuf,
+    /// The entry's link text. Defaults to the file name.
+    pub title: Option<String>,
+    /// Text after the link, as a chapter's `description` gives.
+    pub description: Option<String>,
 }
 
 impl Default for Config {
@@ -56,6 +75,9 @@ impl Default for Config {
             site_url: None,
             merge_into_html: true,
             discovery_links: true,
+            sizes: false,
+            preamble: None,
+            optional: Vec::new(),
         }
     }
 }
