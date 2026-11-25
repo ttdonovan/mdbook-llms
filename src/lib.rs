@@ -328,9 +328,7 @@ fn base_url(ctx: &RenderContext, config: &Config) -> Result<String> {
         Some(url) => Some(url.clone()),
         None => ctx.config.get::<String>("output.html.site-url")?,
     };
-    Ok(site
-        .map(|url| format!("{}/", url.trim_end_matches('/')))
-        .unwrap_or_default())
+    Ok(site.map_or_else(String::new, |url| format!("{}/", url.trim_end_matches('/'))))
 }
 
 fn page_url(base: &str, path: &Path, extension: &str) -> String {

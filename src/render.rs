@@ -75,10 +75,8 @@ fn entry_line(
     description: Option<&str>,
     size: Option<usize>,
 ) -> String {
-    let description = description.map(|d| format!(": {d}")).unwrap_or_default();
-    let size = size
-        .map(|bytes| format!(" ({})", tokens(bytes)))
-        .unwrap_or_default();
+    let description = description.map_or_else(String::new, |d| format!(": {d}"));
+    let size = size.map_or_else(String::new, |bytes| format!(" ({})", tokens(bytes)));
     format!("{indent}- [{title}]({url}){description}{size}\n")
 }
 
