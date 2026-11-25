@@ -8,6 +8,11 @@ cargo install --locked mdbook-llms
 
 From a local checkout, use `cargo install --path .` instead.
 
+Prebuilt binaries for Linux, macOS and Windows are attached to each
+[GitHub Release](https://github.com/ttdonovan/mdbook-llms/releases) as
+`mdbook-llms-<tag>-<target>.tar.gz` (`.zip` on Windows), each with a `.sha256`
+file. The archive holds both binaries.
+
 This installs two binaries: the `mdbook-llms` renderer and the `mdbook-strip-frontmatter` preprocessor. Both must be on your `PATH` when you run `mdbook build`.
 
 ## Configure

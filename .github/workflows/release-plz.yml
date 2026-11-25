@@ -12,6 +12,9 @@ jobs:
   release:
     if: github.repository_owner == 'ttdonovan'
     runs-on: ubuntu-latest
+    outputs:
+      releases_created: ${{ steps.release-plz.outputs.releases_created }}
+      releases: ${{ steps.release-plz.outputs.releases }}
     permissions:
       contents: write
       pull-requests: read
@@ -26,11 +29,23 @@ jobs:
       - name: Install Rust
         run: rustup toolchain install stable --profile minimal && rustup default stable
 
-      - uses: release-plz/action@66b324fd6c72d05d2a08568492ecdd62bfb8a62b # v0.5.148
+      - id: release-plz
+        uses: release-plz/action@66b324fd6c72d05d2a08568492ecdd62bfb8a62b # v0.5.148
         with:
           command: release
         env:
           GITHUB_TOKEN: ${{ secrets.RELEASE_PLZ_TOKEN || secrets.GITHUB_TOKEN }}
+
+  # Attach binaries to the new release. Called here because a release made with
+  # GITHUB_TOKEN does not trigger tag or release events.
+  binaries:
+    needs: release
+    if: needs.release.outputs.releases_created == 'true'
+    permissions:
+      contents: write
+    uses: ./.github/workflows/release-binaries.yml
+    with:
+      tag: ${{ fromJSON(needs.release.outputs.releases)[0].tag }}
 
   # Open or update the release PR with the version bump and changelog
   release-pr:
