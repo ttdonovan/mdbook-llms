@@ -24,6 +24,11 @@ cargo install --locked mdbook-llms
 
 From a local checkout, use `cargo install --path .` instead.
 
+Prebuilt binaries for Linux, macOS and Windows are attached to each
+[GitHub Release](https://github.com/ttdonovan/mdbook-llms/releases) as
+`mdbook-llms-<tag>-<target>.tar.gz` (`.zip` on Windows), each with a `.sha256`
+file. The archive holds both binaries.
+
 ## Usage
 
 To generate only the llms files, list only this output. mdBook then skips HTML,
