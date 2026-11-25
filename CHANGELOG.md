@@ -7,6 +7,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.4.1](https://github.com/ttdonovan/mdbook-llms/compare/v0.4.0...v0.4.1) - 2026-11-25
+
+### Fixed
+
+- use map_or_else so clippy on Rust 1.100 passes.
+
+### Other
+
+- build and attach release binaries for five targets.
+
 ## [0.4.0](https://github.com/ttdonovan/mdbook-llms/compare/v0.3.0...v0.4.0) - 2026-11-07
 
 ### Fixed
