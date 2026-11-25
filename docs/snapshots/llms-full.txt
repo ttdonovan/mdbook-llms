@@ -62,6 +62,11 @@ cargo install --locked mdbook-llms
 
 From a local checkout, use `cargo install --path .` instead.
 
+Prebuilt binaries for Linux, macOS and Windows are attached to each
+[GitHub Release](https://github.com/ttdonovan/mdbook-llms/releases) as
+`mdbook-llms-<tag>-<target>.tar.gz` (`.zip` on Windows), each with a `.sha256`
+file. The archive holds both binaries.
+
 This installs two binaries: the `mdbook-llms` renderer and the `mdbook-strip-frontmatter` preprocessor. Both must be on your `PATH` when you run `mdbook build`.
 
 ## Configure
@@ -173,7 +178,7 @@ just check
 
 ## Releases
 
-Releases are made by [release-plz](https://release-plz.dev/) from [Conventional Commits](https://www.conventionalcommits.org/), so prefix commit messages with `feat:`, `fix:`, `docs:` and so on, and mark breaking changes with `!` (e.g. `feat!:`). On each push to `main`, release-plz opens or updates a release PR that bumps the version and updates `CHANGELOG.md`. Merging it publishes the new version to crates.io through [trusted publishing](https://crates.io/docs/trusted-publishing), tags `vX.Y.Z` and creates a GitHub Release.
+Releases are made by [release-plz](https://release-plz.dev/) from [Conventional Commits](https://www.conventionalcommits.org/), so prefix commit messages with `feat:`, `fix:`, `docs:` and so on, and mark breaking changes with `!` (e.g. `feat!:`). On each push to `main`, release-plz opens or updates a release PR that bumps the version and updates `CHANGELOG.md`. Merging it publishes the new version to crates.io through [trusted publishing](https://crates.io/docs/trusted-publishing), tags `vX.Y.Z` and creates a GitHub Release. The `Release binaries` workflow then builds both binaries for five targets and attaches the archives and `.sha256` files to that release. To backfill an existing tag, run it by hand from the Actions tab with the tag.
 
 ## Building the docs
 
